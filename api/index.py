@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import FileResponse, HTMLResponse
 from utils.excel_handler import process_file
-import os
+import os, tempfile
 
 app = FastAPI()
 
@@ -10,19 +10,22 @@ async def home():
     with open("index.html", "r", encoding="utf-8") as f:
         return f.read()
 
+
 @app.post("/api/process")
 async def process_excel(file: UploadFile = File(...)):
-    input_path = f"/tmp/{file.filename}"
-    output_path = f"/tmp/processed_{file.filename}"
+    # Thư mục tạm hợp lệ cho cả Windows & Vercel
+    tmp_dir = tempfile.gettempdir()
+    input_path = os.path.join(tmp_dir, file.filename)
+    output_path = os.path.join(tmp_dir, f"processed_{file.filename}")
 
-    # Lưu file upload vào /tmp
+    # Ghi file upload vào ổ tạm
     with open(input_path, "wb") as f:
         f.write(await file.read())
 
-    # Gọi hàm xử lý Excel
+    # Xử lý Excel (hàm bạn đã có sẵn)
     process_file(input_path, output_path)
 
-    # Trả về file kết quả
+    # Trả về file đã xử lý cho client
     return FileResponse(
         output_path,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
