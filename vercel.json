@@ -6,7 +6,7 @@
       "use": "@vercel/python@3.9"
     }
   ],
-  "routes": [
+  "functions": [
     {
       "src": "/api/(.*)",
       "dest": "api/index.py"
